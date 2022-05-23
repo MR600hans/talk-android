@@ -1,7 +1,9 @@
 /*
  * Nextcloud Talk application
  *
+ * @author Andy Scherzinger
  * @author Mario Danic
+ * Copyright (C) 202 Andy Scherzinger <info@andy-scherzinger.de>
  * Copyright (C) 2017-2019 Mario Danic <mario@lovelyhq.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,10 +24,10 @@ package com.nextcloud.talk.components.filebrowser.webdav;
 
 import android.util.Log;
 
-import com.nextcloud.talk.components.filebrowser.models.BrowserFile;
 import com.nextcloud.talk.components.filebrowser.models.DavResponse;
 import com.nextcloud.talk.dagger.modules.RestModule;
 import com.nextcloud.talk.models.database.UserEntity;
+import com.nextcloud.talk.remotefilebrowser.model.RemoteFileBrowserItem;
 import com.nextcloud.talk.utils.ApiUtils;
 
 import java.io.IOException;
@@ -36,7 +38,6 @@ import at.bitfire.dav4jvm.DavResource;
 import at.bitfire.dav4jvm.Response;
 import at.bitfire.dav4jvm.exception.DavException;
 import kotlin.Unit;
-import kotlin.jvm.functions.Function2;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 
@@ -52,12 +53,12 @@ public class ReadFilesystemOperation {
         okHttpClientBuilder.followRedirects(false);
         okHttpClientBuilder.followSslRedirects(false);
         okHttpClientBuilder.authenticator(
-                new RestModule.MagicAuthenticator(
-                        ApiUtils.getCredentials(
-                                currentUser.getUsername(),
-                                currentUser.getToken()
-                                               ),
-                        "Authorization")
+            new RestModule.MagicAuthenticator(
+                ApiUtils.getCredentials(
+                    currentUser.getUsername(),
+                    currentUser.getToken()
+                                       ),
+                "Authorization")
                                          );
         this.okHttpClient = okHttpClientBuilder.build();
         this.basePath = currentUser.getBaseUrl() + DavUtils.DAV_PATH + currentUser.getUserId();
@@ -69,36 +70,43 @@ public class ReadFilesystemOperation {
         DavResponse davResponse = new DavResponse();
         final List<Response> memberElements = new ArrayList<>();
         final Response[] rootElement = new Response[1];
-        final List<BrowserFile> remoteFiles = new ArrayList<>();
+        final List<RemoteFileBrowserItem> remoteFiles = new ArrayList<>();
 
         try {
-            new DavResource(okHttpClient, HttpUrl.parse(url)).propfind(depth, DavUtils.getAllPropSet(),
-                    new Function2<Response, Response.HrefRelation, Unit>() {
-                        @Override
-                        public Unit invoke(Response response, Response.HrefRelation hrefRelation) {
-                            davResponse.setResponse(response);
-                            switch (hrefRelation) {
-                                case MEMBER:
-                                    memberElements.add(response);
-                                    break;
-                                case SELF:
-                                    rootElement[0] = response;
-                                    break;
-                                case OTHER:
-                                default:
-                            }
-                            return Unit.INSTANCE;
-                        }
-                    });
+            new DavResource(
+                okHttpClient,
+                HttpUrl.parse(url)).propfind(depth,
+                                             DavUtils.getAllPropSet(),
+                                             (response, hrefRelation) -> {
+                                                 davResponse.setResponse(response);
+                                                 switch (hrefRelation) {
+                                                     case MEMBER:
+                                                         memberElements.add(response);
+                                                         break;
+                                                     case SELF:
+                                                         rootElement[0] = response;
+                                                         break;
+                                                     case OTHER:
+                                                     default:
+                                                 }
+                                                 return Unit.INSTANCE;
+                                             });
         } catch (IOException | DavException e) {
-            Log.w("", "Error reading remote path");
+            Log.w(TAG, "Error reading remote path");
         }
 
-        remoteFiles.add(BrowserFile.Companion.getModelFromResponse(rootElement[0],
-                rootElement[0].getHref().toString().substring(basePath.length())));
+
+        remoteFiles.add(RemoteFileBrowserItem.Companion.getModelFromResponse(rootElement[0],
+                                                                             rootElement[0]
+                                                                                 .getHref()
+                                                                                 .toString()
+                                                                                 .substring(basePath.length())));
         for (Response memberElement : memberElements) {
-            remoteFiles.add(BrowserFile.Companion.getModelFromResponse(memberElement,
-                    memberElement.getHref().toString().substring(basePath.length())));
+            remoteFiles.add(RemoteFileBrowserItem.Companion.getModelFromResponse(memberElement,
+                                                                                 memberElement
+                                                                                     .getHref()
+                                                                                     .toString()
+                                                                                     .substring(basePath.length())));
         }
 
         davResponse.setData(remoteFiles);
