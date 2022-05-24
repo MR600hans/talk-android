@@ -58,8 +58,8 @@ public class ApiUtils {
     }
 
     /**
-     * @deprecated This is only supported on API v1-3, in API v4+ please use
-     * {@link ApiUtils#getUrlForAttendees(int, String, String)} instead.
+     * @deprecated This is only supported on API v1-3, in API v4+ please use {@link ApiUtils#getUrlForAttendees(int,
+     * String, String)} instead.
      */
     @Deprecated
     public static String getUrlForRemovingParticipantFromConversation(String baseUrl, String roomToken, boolean isGuest) {
@@ -92,13 +92,13 @@ public class ApiUtils {
 
     public static String getUrlForFilePreviewWithRemotePath(String baseUrl, String remotePath, int px) {
         return baseUrl + "/index.php/core/preview.png?file="
-                + Uri.encode(remotePath, "UTF-8")
-                + "&x=" + px + "&y=" + px + "&a=1&mode=cover&forceIcon=1";
+            + Uri.encode(remotePath, "UTF-8")
+            + "&x=" + px + "&y=" + px + "&a=1&mode=cover&forceIcon=1";
     }
 
     public static String getUrlForFilePreviewWithFileId(String baseUrl, String fileId, int px) {
         return baseUrl + "/index.php/core/preview?fileId="
-                + fileId + "&x=" + px + "&y=" + px + "&a=1&mode=cover&forceIcon=1";
+            + fileId + "&x=" + px + "&y=" + px + "&a=1&mode=cover&forceIcon=1";
     }
 
     public static String getSharingUrl(String baseUrl) {
@@ -143,9 +143,9 @@ public class ApiUtils {
                 if (CapabilitiesUtil.hasSpreedFeatureCapability(user, "conversation-v2")) {
                     return version;
                 }
-                if (version == APIv1  &&
-                        CapabilitiesUtil.hasSpreedFeatureCapability(user, "mention-flag") &&
-                        !CapabilitiesUtil.hasSpreedFeatureCapability(user, "conversation-v4")) {
+                if (version == APIv1 &&
+                    CapabilitiesUtil.hasSpreedFeatureCapability(user, "mention-flag") &&
+                    !CapabilitiesUtil.hasSpreedFeatureCapability(user, "conversation-v4")) {
                     return version;
                 }
             }
@@ -160,13 +160,13 @@ public class ApiUtils {
             }
 
             if (version == APIv2 &&
-                    CapabilitiesUtil.hasSpreedFeatureCapability(user, "sip-support") &&
-                    !CapabilitiesUtil.hasSpreedFeatureCapability(user, "signaling-v3")) {
+                CapabilitiesUtil.hasSpreedFeatureCapability(user, "sip-support") &&
+                !CapabilitiesUtil.hasSpreedFeatureCapability(user, "signaling-v3")) {
                 return version;
             }
 
             if (version == APIv1 &&
-                    !CapabilitiesUtil.hasSpreedFeatureCapability(user, "signaling-v3")) {
+                !CapabilitiesUtil.hasSpreedFeatureCapability(user, "signaling-v3")) {
                 // Has no capability, we just assume it is always there when there is no v3 or later
                 return version;
             }
@@ -201,7 +201,7 @@ public class ApiUtils {
     }
 
     public static String getUrlForParticipants(int version, String baseUrl, String token) {
-        if (token == null || token.isEmpty()){
+        if (token == null || token.isEmpty()) {
             Log.e(TAG, "token was null or empty");
         }
         return getUrlForRoom(version, baseUrl, token) + "/participants";
@@ -250,6 +250,7 @@ public class ApiUtils {
     public static String getUrlForCall(int version, String baseUrl, String token) {
         return getUrlForApi(version, baseUrl) + "/call/" + token;
     }
+
     public static String getUrlForChat(int version, String baseUrl, String token) {
         return getUrlForApi(version, baseUrl) + "/chat/" + token;
     }
@@ -257,10 +258,11 @@ public class ApiUtils {
     public static String getUrlForMentionSuggestions(int version, String baseUrl, String token) {
         return getUrlForChat(version, baseUrl, token) + "/mentions";
     }
+
     public static String getUrlForChatMessage(int version, String baseUrl, String token, String messageId) {
         return getUrlForChat(version, baseUrl, token) + "/" + messageId;
     }
-    
+
     public static String getUrlForChatSharedItems(int version, String baseUrl, String token) {
         return getUrlForChat(version, baseUrl, token) + "/share";
     }
@@ -329,11 +331,11 @@ public class ApiUtils {
     }
 
     public static RetrofitBucket getRetrofitBucketForAddParticipantWithSource(
-            int version,
-            String baseUrl,
-            String token,
-            String source,
-            String id
+        int version,
+        String baseUrl,
+        String token,
+        String source,
+        String id
                                                                              ) {
         RetrofitBucket retrofitBucket = getRetrofitBucketForAddParticipant(version, baseUrl, token, id);
         retrofitBucket.getQueryMap().put("source", source);
@@ -380,7 +382,7 @@ public class ApiUtils {
 
     public static String getUrlPushProxy() {
         return NextcloudTalkApplication.Companion.getSharedApplication().
-                getApplicationContext().getResources().getString(R.string.nc_push_server_url) + "/devices";
+            getApplicationContext().getResources().getString(R.string.nc_push_server_url) + "/devices";
     }
 
     public static String getUrlForNotificationWithId(String baseUrl, String notificationId) {
@@ -411,8 +413,10 @@ public class ApiUtils {
         return getUrlForChat(version, baseUrl, roomToken) + "/share";
     }
 
-    public static String getUrlForHoverCard(String baseUrl, String userId) { return baseUrl + ocsApiVersion +
-        "/hovercard/v1/" + userId; }
+    public static String getUrlForHoverCard(String baseUrl, String userId) {
+        return baseUrl + ocsApiVersion +
+            "/hovercard/v1/" + userId;
+    }
 
     public static String getUrlForSetChatReadMarker(int version, String baseUrl, String roomToken) {
         return getUrlForChat(version, baseUrl, roomToken) + "/read";
@@ -454,6 +458,17 @@ public class ApiUtils {
                                                   String roomToken,
                                                   String messageId) {
         return baseUrl + ocsApiVersion + spreedApiVersion + "/reaction/" + roomToken + "/" + messageId;
+    }
+
+    public static String getUrlForPoll(String baseUrl,
+                                       String roomToken,
+                                       String pollId) {
+        return getUrlForPoll(baseUrl, roomToken) + "/" + pollId;
+    }
+
+    public static String getUrlForPoll(String baseUrl,
+                                       String roomToken) {
+        return baseUrl + ocsApiVersion + spreedApiVersion + "/poll/" + roomToken;
     }
 
 }
